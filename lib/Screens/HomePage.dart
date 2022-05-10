@@ -1,16 +1,20 @@
 // ignore: file_names
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names, curly_braces_in_flow_control_structures
 
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_attendence_system/Screens/LoginPage.dart';
+
+import 'logged_in.dart';
 
 class Homepage extends StatefulWidget {
   final String companyname;
-  const Homepage({Key? key, required this.companyname}) : super(key: key);
+  Homepage({Key? key, required this.companyname,}) : super(key: key);
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -23,10 +27,13 @@ class _HomepageState extends State<Homepage> {
   String result = "";
   int bottomIndex = 0;
 
+  var body;
+
   Future ini() async {
     sharedPreferences = await SharedPreferences.getInstance();
   }
 
+// location verification of the company for marking attendance
   double getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     double R = 6371; // Radius of the earth in km
     double dLat = deg2rad(lat2 - lat1); // deg2rad below
@@ -352,6 +359,8 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
+    /*final User = FirebaseAuth.instance.currentUser!;
+    var user;*/
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -381,7 +390,24 @@ class _HomepageState extends State<Homepage> {
               ? Container(
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
-                  color: Colors.green,
+                  child: Column(children: [
+                    /* StreamBuilder(
+                        stream: FirebaseAuth.instance.authStateChanges(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasData) {
+                            return logged_in();
+                          } else if (snapshot.hasError) {
+                            return Center(child: Text("Something went wrong!"));
+                          } else {
+                            return LoginPage(
+                              companyname: '',
+                            );
+                          }
+                        }),*/
+                  ]),
                 )
               : Container(
                   width: MediaQuery.of(context).size.width,
@@ -451,17 +477,21 @@ class _HomepageState extends State<Homepage> {
         },
         elevation: 5,
         items: [
+          //1 Home
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          //2 Person
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.person,
               ),
-              label: "Person"),
+              label: "My Account"),
+          //3 Account
+
           BottomNavigationBarItem(
               icon: Icon(
-                Icons.account_balance,
+                Icons.dashboard,
               ),
-              label: "Account")
+              label: "Dashboard")
         ],
       ),
       //edit buttom on home page
@@ -471,4 +501,12 @@ class _HomepageState extends State<Homepage> {
       // ),
     );
   }
+}
+
+Widget SignUpWidget() {
+  return Container();
+}
+
+Widget LoggedInWidget() {
+  return Container();
 }

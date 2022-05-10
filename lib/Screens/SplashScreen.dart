@@ -24,7 +24,7 @@ class _splashscreenState extends State<splashscreen> {
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => const Homepage(
+            builder: (context) =>  Homepage(
                   companyname: '',
                 )));
   }

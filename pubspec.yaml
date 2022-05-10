@@ -43,8 +43,12 @@ dependencies:
   permission_handler: ^9.2.0
   geolocator: ^8.2.0
   translator: ^0.1.7
-  firebase: ^9.0.2
-  firebase_auth: ^3.3.8
+  firebase_core: ^1.16.0
+  firebase_auth: ^3.3.12
+  firebase_database: ^9.0.13
+  google_sign_in: ^5.0.3
+  provider: ^5.0.0
+  font_awesome_flutter: ^9.0.0 # for google icon
 
 dev_dependencies:
   flutter_test:
