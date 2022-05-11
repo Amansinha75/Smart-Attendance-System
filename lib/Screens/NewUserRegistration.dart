@@ -1,8 +1,9 @@
-// ignore_for_file: file_names, prefer_const_constructors, unnecessary_new, prefer_typing_uninitialized_variables, unused_local_variable, prefer_final_fields
+// ignore_for_file: file_names, prefer_const_constructors, unnecessary_new, prefer_typing_uninitialized_variables, unused_local_variable, prefer_final_fields, unused_import
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_attendence_system/Screens/LoginPage.dart';
 
 import 'HomePage.dart';
 
@@ -21,24 +22,15 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
   final TextEditingController _employeeID = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _passwordR = TextEditingController();
-  
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final DatabaseReference ref = FirebaseDatabase.instance.ref("users");
+  //final DatabaseReference ref = FirebaseDatabase.instance.ref("users");
 
-  //bool _isObscure;
-
-
-   //late bool _isObscure;
-  
-
-//var isObscure;
+  var isObscure;
 
   get companyname => null;
 
-  get isObscure => null;
-
-//isObscure() => null;
-  
+  bool _isObscure = true;
 
   _showToast(BuildContext context, String show) {
     final scaffold = ScaffoldMessenger.of(context);
@@ -62,9 +54,11 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
         });
   }
 
-  int valueChoose = 0;
+  //int valueChoose = 0;
   //final List<String> listItems = ["BSPGCL", "BSPTCL", "SBPDCL", "NBPDCL"];
-  addUserData() async {
+
+
+ /* addUserData() async {
     try {
       final newChild = ref.push();
       Map<String, String> data = {
@@ -90,11 +84,11 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
     if (this.mounted) {
       setState(() {});
     }
-  }
+  } */
 
   @override
   Widget build(BuildContext context) {
-    //var isObscure = _isObscure;
+    bool isObscure = _isObscure;
     return Scaffold(
         backgroundColor: const Color(0xFF2F4464),
         body: Container(
@@ -195,9 +189,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(20))),
                                   hintText: "Employee ID",
-                                  prefixIcon: Icon(
-                                    Icons.person,
-                                  ),
+                                  prefixIcon: Icon(Icons.man),
                                 ),
                               ),
                             ),
@@ -231,60 +223,70 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                             //Password
                             const SizedBox(height: 20),
                             TextFormField(
-                              obscureText: true,
-                              controller: _password,
-                              keyboardType: TextInputType.text,
-                              validator: (value) {
-                                if (_password.text.length <= 5) {
-                                  return "Password should be more than 5 letters";
-                                }
-                                return null;
-                              },
-                              decoration: InputDecoration(
+                                obscureText: _isObscure,
+                                controller: _password,
+                                keyboardType: TextInputType.text,
+                                validator: (value) {
+                                  if (_password.text.length <= 5) {
+                                    return "Password should be more than 5 letters";
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
                                   fillColor: Colors.white,
                                   filled: true,
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(20))),
                                   hintText: "Create Password",
-                                  prefixIcon: Icon(Icons.security),
-                                  /*suffixIcon: IconButton(
-                                  icon: Icon(
-                                    isObscure
-                                        ? Icons.visibility
-                                        : Icons.visibility_off,
+                                  prefixIcon: Icon(Icons.lock),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      isObscure
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isObscure = !_isObscure;
+                                      });
+                                    },
                                   ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isObscure = !_isObscure;
-                                    });
-                                  },
-                                ),*/
-                              )
-                                  
-                            ),
+                                )),
 
-                            //repeat password
+                            //Re-Type Password
                             const SizedBox(height: 20),
                             TextFormField(
-                              obscureText: true,
-                              controller: _passwordR,
-                              keyboardType: TextInputType.text,
-                              validator: (value) {
-                                if (_passwordR.text.length <= 5) {
-                                  return "Password should be more than 5 letters";
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
+                                obscureText: _isObscure,
+                                controller: _passwordR,
+                                keyboardType: TextInputType.text,
+                                validator: (value) {
+                                  if (_password.text.length <= 5) {
+                                    return "Password should be more than 5 letters";
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
                                   fillColor: Colors.white,
                                   filled: true,
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(20))),
                                   hintText: "Re-Type Password",
-                                  prefixIcon: Icon(Icons.security)),
-                            ),
+                                  prefixIcon: Icon(Icons.key),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      isObscure
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isObscure = !_isObscure;
+                                      });
+                                    },
+                                  ),
+                                )),
 
                             //phone number
                             const SizedBox(height: 20),
@@ -373,7 +375,9 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                                       "password": _password.text,
                                       "phone": _phone.text,
                                       "email": _emailID.text,
-                                      "employeeID": _employeeID.text
+                                      "employeeID": _employeeID.text,
+                                      "passwordR": _passwordR.text,
+
                                     });
                                     Navigator.pop(context);
                                     _showToast(
@@ -381,8 +385,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                                     Navigator.pushAndRemoveUntil(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => Homepage(
-                                                companyname: companyname)),
+                                            builder: (context) => LoginPage(companyname: '')),
                                         (route) => false);
                                   } on FirebaseAuthException catch (e) {
                                     Navigator.pop(context);
