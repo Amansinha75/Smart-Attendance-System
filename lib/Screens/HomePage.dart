@@ -1,12 +1,14 @@
 // ignore: file_names
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names, curly_braces_in_flow_control_structures
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names, curly_braces_in_flow_control_structures, unused_import
 
 import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_attendence_system/Screens/LoginPage.dart';
 
@@ -14,7 +16,12 @@ import 'logged_in.dart';
 
 class Homepage extends StatefulWidget {
   final String companyname;
-  Homepage({Key? key, required this.companyname,}) : super(key: key);
+
+  var uID;
+  Homepage({
+    Key? key,
+    required this.companyname,
+  }) : super(key: key);
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -26,12 +33,68 @@ class _HomepageState extends State<Homepage> {
   double lon = 0;
   String result = "";
   int bottomIndex = 0;
+  String uID = "";
+  String _email = "";
+  String _name = "";
+  String _phone = "";
+  String _employeeID = "";
+  String _designation = "";
 
   var body;
 
+  var ref;
+
+//FOR GETTING USER DATA
   Future ini() async {
     sharedPreferences = await SharedPreferences.getInstance();
+    if (sharedPreferences.getString("user_id") != null) {
+      uID = sharedPreferences.getString("user_id")!;
+      print(uID);
+      final ref = await FirebaseDatabase.instance.ref("Users/" + uID).once();
+      ref.snapshot.children.forEach((element) {
+        if (element.key.toString() == "email") {
+          _email = element.value.toString();
+        } else if (element.key.toString() == "name") {
+          _name = element.value.toString();
+        } else if (element.key.toString() == "phone") {
+          _phone = element.value.toString();
+        } else if (element.key.toString() == "employeeID") {
+          _employeeID = element.value.toString();
+        } else if (element.key.toString() == "designation") {
+          _designation = element.value.toString();
+        }
+      });
+
+      setState(() {});
+    } else {
+      print("Not Found");
+    }
   }
+
+/*Markattendancedata() async {
+    try {
+      final newChild = ref.push();
+
+      await FirebaseDatabase.instance.ref("Homepage/"+newChild.key.toString()).set({
+        "morningtime": _morningtime.text,
+        "eveningtime": _eveningtime.text,
+        "userId": widget.uID,
+        
+      });
+
+      _morningtime.text = "";
+      _eveningtime.text = "";
+    
+      
+      Navigator.pop(context);
+      _showToast(context, "Crop Added Successfully");
+      await init();
+    } catch(e) {
+      Navigator.pop(context);
+      _showToast(context, "Some Unknown Error Occurred");
+    }
+
+  } */
 
 // location verification of the company for marking attendance
   double getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -73,6 +136,7 @@ class _HomepageState extends State<Homepage> {
     ini();
   }
 
+// FOR HOME SCREEN PART
   Widget Home(BuildContext context) {
     return Container(
       alignment: Alignment.center,
@@ -117,7 +181,6 @@ class _HomepageState extends State<Homepage> {
                       height: 150.0,
                       child: ElevatedButton(
                         onPressed: () async {
-                          //sharedPreferences.setBool("LoggedIn", true);
                           // time
                           final hour = DateTime.now().hour;
                           if (9 <= hour && hour <= 12) {
@@ -357,10 +420,9 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
+  // OTHER PARTS
   @override
   Widget build(BuildContext context) {
-    /*final User = FirebaseAuth.instance.currentUser!;
-    var user;*/
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -387,34 +449,54 @@ class _HomepageState extends State<Homepage> {
       body: bottomIndex == 0
           ? Home(context)
           : (bottomIndex == 1
-              ? Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: Column(children: [
-                    /* StreamBuilder(
-                        stream: FirebaseAuth.instance.authStateChanges(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasData) {
-                            return logged_in();
-                          } else if (snapshot.hasError) {
-                            return Center(child: Text("Something went wrong!"));
-                          } else {
-                            return LoginPage(
-                              companyname: '',
-                            );
-                          }
-                        }),*/
-                  ]),
-                )
+              ?
+              //MY ACCOUNT PART
+              _email.isEmpty
+                  ? Center(child: CircularProgressIndicator())
+                  : Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      child: displayUserInfo(context, _name, _email, _phone,
+                          _employeeID, _designation))
+              //DASHBOARD PART
               : Container(
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                   color: Colors.yellow,
                 )),
-      // drawer part, left side
+
+      //BOTTOM ICON PART
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: bottomIndex,
+        selectedItemColor: Colors.black,
+        iconSize: 25,
+        onTap: (int index) {
+          setState(() {
+            bottomIndex = index;
+          });
+        },
+        elevation: 5,
+        items: [
+          //1 Home
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          //2 Person
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.person,
+              ),
+              label: "My Account"),
+          //3 Dashboard
+
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.dashboard,
+              ),
+              label: "Dashboard")
+        ],
+      ),
+
+      //DRAWER PART, LEFT SIDE
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -465,42 +547,23 @@ class _HomepageState extends State<Homepage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: bottomIndex,
-        selectedItemColor: Colors.black,
-        iconSize: 40,
-        onTap: (int index) {
-          setState(() {
-            bottomIndex = index;
-          });
-        },
-        elevation: 5,
-        items: [
-          //1 Home
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          //2 Person
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.person,
-              ),
-              label: "My Account"),
-          //3 Account
-
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.dashboard,
-              ),
-              label: "Dashboard")
-        ],
-      ),
-      //edit buttom on home page
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {},
-      //   child: const Icon(Icons.edit),
-      // ),
     );
   }
+}
+
+init() {
+}
+
+class _showToast {
+  _showToast(BuildContext context, String s);
+}
+
+class _eveningtime {
+  static var text;
+}
+
+class _morningtime {
+  static var text;
 }
 
 Widget SignUpWidget() {
@@ -509,4 +572,169 @@ Widget SignUpWidget() {
 
 Widget LoggedInWidget() {
   return Container();
+}
+
+// FOR ACCOUNT PART (WIDGET PART)
+Widget displayUserInfo(context, String name, String email, String phone,
+    String employeeID, String designation) {
+  return SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsets.all(25.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          //for the instruction part
+          const SizedBox(height: 10),
+          const Text(
+            "ACCOUNT INFO",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 25,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(
+            height: 50,
+          ),
+          Container(
+            height: 250,
+            decoration: const BoxDecoration(
+                borderRadius: const BorderRadius.all(const Radius.circular(13)),
+                color: Color.fromARGB(255, 72, 81, 103)),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 25,
+                ),
+                //Name
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.person, color: Colors.grey),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        name,
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                //Mail ID
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.mail,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        email,
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                // Phone Number
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.phone,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        phone,
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                // Employee ID
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.perm_identity,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        employeeID,
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+
+                //Designation
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.work,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        designation,
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+
+                /*Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Company Name: " + companyname),
+                ), */
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

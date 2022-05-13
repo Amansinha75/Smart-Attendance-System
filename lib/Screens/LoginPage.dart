@@ -255,10 +255,10 @@ class _LoginPageState extends State<LoginPage> {
                                       await _auth.signInWithEmailAndPassword(
                                           email: _emailId.text,
                                           password: _password.text);
-                                  print(userCredential);
                                   var user = FirebaseAuth.instance.currentUser!;
                                   if (user.emailVerified) {
-                                    await _prefs.setString(
+                                    print(userCredential.user!.uid);
+                                    await sharedPreferences.setString(
                                         "user_id", userCredential.user!.uid);
 
                                     Navigator.pop(context);
@@ -366,10 +366,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   launch(String s) {}
-}
-
-class _prefs {
-  static setString(String s, String uid) {}
 }
 
 class NNavigator {

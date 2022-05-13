@@ -22,6 +22,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
   final TextEditingController _employeeID = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _passwordR = TextEditingController();
+  final TextEditingController _designation = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   //final DatabaseReference ref = FirebaseDatabase.instance.ref("users");
@@ -57,8 +58,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
   //int valueChoose = 0;
   //final List<String> listItems = ["BSPGCL", "BSPTCL", "SBPDCL", "NBPDCL"];
 
-
- /* addUserData() async {
+  /* addUserData() async {
     try {
       final newChild = ref.push();
       Map<String, String> data = {
@@ -189,6 +189,31 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(20))),
                                   hintText: "Employee ID",
+                                  prefixIcon: Icon(Icons.man),
+                                ),
+                              ),
+                            ),
+
+                            //Designation
+                            const SizedBox(height: 20),
+                            AutofillGroup(
+                              child: TextFormField(
+                                controller: _designation,
+                                autofillHints: const [AutofillHints.name],
+                                keyboardType: TextInputType.name,
+                                validator: (value) {
+                                  if (_designation.text.length <= 3) {
+                                    return "Invalid Name";
+                                  }
+                                  return null;
+                                },
+                                decoration: const InputDecoration(
+                                  fillColor: Colors.white,
+                                  filled: true,
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(20))),
+                                  hintText: "Designation",
                                   prefixIcon: Icon(Icons.man),
                                 ),
                               ),
@@ -377,7 +402,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                                       "email": _emailID.text,
                                       "employeeID": _employeeID.text,
                                       "passwordR": _passwordR.text,
-
+                                      "designation": _designation.text,
                                     });
                                     Navigator.pop(context);
                                     _showToast(
@@ -385,7 +410,8 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                                     Navigator.pushAndRemoveUntil(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => LoginPage(companyname: '')),
+                                            builder: (context) =>
+                                                LoginPage(companyname: '')),
                                         (route) => false);
                                   } on FirebaseAuthException catch (e) {
                                     Navigator.pop(context);

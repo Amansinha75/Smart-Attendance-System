@@ -37,7 +37,9 @@ class name extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Smart Attendence System",
-        home: const LoginPage(companyname: '',),
+        home: LoginPage(companyname: '',
+                
+              ),
         theme: ThemeData(
           primarySwatch: Colors.indigo,
         ),
@@ -60,7 +62,7 @@ class name extends StatelessWidget {
           "/Resetpass_success": (context) => const ResetPasswordSuccessfully(),
           "/NewuserReg": (context) => const NewUserRegistration(),
           "/NewAcc_Created": (context) => const NewAccountCreated(),
-          "/demo": (context) => const demo(),
+          "/demo": (context) => const demo(userId: '',),
           "/companyname": (context) => const CompanyName(),
 
           //Widget build(BuildContext context)=>ChangeNotifierProvider()
