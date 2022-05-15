@@ -232,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
 
                     //for "LOGIN" buttom (with shared Preference used)
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 30),
                     Padding(
                         padding: const EdgeInsets.all(10),
                         child: SizedBox(
@@ -253,8 +253,8 @@ class _LoginPageState extends State<LoginPage> {
                                   buildShowDialog(context);
                                   UserCredential userCredential =
                                       await _auth.signInWithEmailAndPassword(
-                                          email: _emailId.text,
-                                          password: _password.text);
+                                          email: _emailId.text.trim(),
+                                          password: _password.text.trim());
                                   var user = FirebaseAuth.instance.currentUser!;
                                   if (user.emailVerified) {
                                     print(userCredential.user!.uid);
@@ -291,23 +291,12 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         )),
 
-                    // for the New user registration
-                    const SizedBox(height: 70),
-                    const Text(
-                      "New User?",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 17,
-                        color: Colors.black,
-                      ),
-                    ),
-
-                    // google sign-in buttom
-                    /*  const SizedBox(height: 10),
+                    /* google sign-in buttom
+                    const SizedBox(height: 10),
                     Padding(
                         padding: const EdgeInsets.all(10),
                         child: SizedBox(
-                          width: 350.0,
+                          width: 300.0,
                           height: 45.0,
                           child: ElevatedButton.icon(
                             style: ButtonStyle(
@@ -319,10 +308,8 @@ class _LoginPageState extends State<LoginPage> {
                                         borderRadius: BorderRadius.circular(10),
                                         side: const BorderSide()))),
                             onPressed: () async {
-                              final provider =
-                                  Provider.of<GoogleSignInProvider>(context,
-                                      listen: false);
-                              provider.googleLogin();
+                              final data = await GoogleSignInApi.login();
+                              print(data);
                             },
                             icon: Image.network(
                                 'http://pngimg.com/uploads/google/google_PNG19635.png',
@@ -332,6 +319,17 @@ class _LoginPageState extends State<LoginPage> {
                                     color: Colors.black, fontSize: 17)),
                           ),
                         )), */
+
+                    // for the New user registration
+                    const SizedBox(height: 30),
+                    const Text(
+                      "New User?",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 17,
+                        color: Colors.black,
+                      ),
+                    ),
 
                     // new register link
                     const SizedBox(height: 10),

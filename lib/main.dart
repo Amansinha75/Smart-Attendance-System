@@ -33,11 +33,12 @@ class name extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => GoogleSignInProvider(),
+      //create: (context) => GoogleSignInProvider(),
+      create: (BuildContext context) {  },
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Smart Attendence System",
-        home: WelcomePage(),
+        home: LoginPage(companyname: '',),
         theme: ThemeData(
           primarySwatch: Colors.indigo,
         ),

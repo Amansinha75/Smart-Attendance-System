@@ -7,10 +7,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_attendence_system/Screens/LoginPage.dart';
+
 
 import 'logged_in.dart';
 
@@ -39,8 +41,12 @@ class _HomepageState extends State<Homepage> {
   String _phone = "";
   String _employeeID = "";
   String _designation = "";
+  //String formattedDate = formatter.format(now);
 
-  var body;
+  
+
+  var now = new DateTime.now();
+  var formatter = new DateFormat('yyyy-MM-dd');
 
   var ref;
 
@@ -74,6 +80,8 @@ class _HomepageState extends State<Homepage> {
 /*Markattendancedata() async {
     try {
       final newChild = ref.push();
+      final DateTime now = DateTime.now();
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
 
       await FirebaseDatabase.instance.ref("Homepage/"+newChild.key.toString()).set({
         "morningtime": _morningtime.text,
