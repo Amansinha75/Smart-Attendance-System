@@ -486,17 +486,17 @@ class _HomepageState extends State<Homepage> {
                 Icons.person,
               ),
               label: "My Account"),
-          //3 Dashboard
+          /*3 Dashboard
 
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.dashboard,
               ),
-              label: "Dashboard")
+              label: "Dashboard") */
         ],
       ),
 
-      //DRAWER PART, LEFT SIDE
+      /*DRAWER PART, LEFT SIDE
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -546,13 +546,12 @@ class _HomepageState extends State<Homepage> {
             ),
           ],
         ),
-      ),
+      ), */
     );
   }
 }
 
-init() {
-}
+init() {}
 
 class _showToast {
   _showToast(BuildContext context, String s);
