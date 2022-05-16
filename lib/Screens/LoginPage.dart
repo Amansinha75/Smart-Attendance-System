@@ -66,6 +66,16 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future signIn() async {
+    final user=await GoogleSignInApi.login();
+    if (user==null){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('sign in failed'),));
+    } else {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(context)=> Homepage(companyname: ''), ));
+    }
+    
+  }
+
   buildShowDialog(BuildContext context) {
     return showDialog(
         context: context,
@@ -291,7 +301,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         )),
 
-                    /* google sign-in buttom
+                    //google sign-in buttom
                     const SizedBox(height: 10),
                     Padding(
                         padding: const EdgeInsets.all(10),
@@ -307,10 +317,7 @@ class _LoginPageState extends State<LoginPage> {
                                     RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                         side: const BorderSide()))),
-                            onPressed: () async {
-                              final data = await GoogleSignInApi.login();
-                              print(data);
-                            },
+                            onPressed: signIn,
                             icon: Image.network(
                                 'http://pngimg.com/uploads/google/google_PNG19635.png',
                                 fit: BoxFit.cover),
@@ -318,7 +325,7 @@ class _LoginPageState extends State<LoginPage> {
                                 style: TextStyle(
                                     color: Colors.black, fontSize: 17)),
                           ),
-                        )), */
+                        )),
 
                     // for the New user registration
                     const SizedBox(height: 30),

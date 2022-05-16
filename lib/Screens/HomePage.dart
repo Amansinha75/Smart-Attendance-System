@@ -7,23 +7,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_attendence_system/Screens/LoginPage.dart';
-
+import 'package:smart_attendence_system/google_sign_in.dart';
 
 import 'logged_in.dart';
 
 class Homepage extends StatefulWidget {
   final String companyname;
 
-  var uID;
   Homepage({
     Key? key,
     required this.companyname,
   }) : super(key: key);
+
+  var uID;
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -31,6 +33,7 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   late SharedPreferences sharedPreferences;
+  GoogleSignInAccount? user;
   double lat = 0;
   double lon = 0;
   String result = "";
@@ -39,11 +42,11 @@ class _HomepageState extends State<Homepage> {
   String _email = "";
   String _name = "";
   String _phone = "";
+  String _image = "";
   String _employeeID = "";
+  GoogleSignIn _googleSignIn = GoogleSignIn();
   String _designation = "";
   //String formattedDate = formatter.format(now);
-
-  
 
   var now = new DateTime.now();
   var formatter = new DateFormat('yyyy-MM-dd');
@@ -53,6 +56,19 @@ class _HomepageState extends State<Homepage> {
 //FOR GETTING USER DATA
   Future ini() async {
     sharedPreferences = await SharedPreferences.getInstance();
+    _googleSignIn.onCurrentUserChanged
+        .listen((GoogleSignInAccount? account) async {
+      setState(() {
+        user = account;
+      });
+      if (user == null) {
+        await GoogleSignInApi.logout();
+        sharedPreferences.setBool("LoggedIn", false);
+        Navigator.pushReplacementNamed(context, "/Login");
+      }
+    });
+    _googleSignIn.signInSilently();
+
     if (sharedPreferences.getString("user_id") != null) {
       uID = sharedPreferences.getString("user_id")!;
       print(uID);
@@ -64,6 +80,8 @@ class _HomepageState extends State<Homepage> {
           _name = element.value.toString();
         } else if (element.key.toString() == "phone") {
           _phone = element.value.toString();
+        } else if (element.key.toString() == "image") {
+          _image = element.value.toString();
         } else if (element.key.toString() == "employeeID") {
           _employeeID = element.value.toString();
         } else if (element.key.toString() == "designation") {
@@ -141,6 +159,7 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     super.initState();
+
     ini();
   }
 
@@ -445,6 +464,7 @@ class _HomepageState extends State<Homepage> {
         actions: [
           IconButton(
               onPressed: () async {
+                await GoogleSignInApi.logout();
                 sharedPreferences.setBool("LoggedIn", false);
                 Navigator.pushReplacementNamed(context, "/Login");
               },
@@ -464,8 +484,14 @@ class _HomepageState extends State<Homepage> {
                   : Container(
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height,
-                      child: displayUserInfo(context, _name, _email, _phone,
-                          _employeeID, _designation))
+                      child: displayUserInfo(
+                          context,
+                          (user!.displayName).toString(),
+                          (user!.email).toString(),
+                          (user!.photoUrl).toString(),
+                          _phone,
+                          _employeeID,
+                          _designation))
               //DASHBOARD PART
               : Container(
                   width: MediaQuery.of(context).size.width,
@@ -582,8 +608,9 @@ Widget LoggedInWidget() {
 }
 
 // FOR ACCOUNT PART (WIDGET PART)
-Widget displayUserInfo(context, String name, String email, String phone,
-    String employeeID, String designation) {
+Widget displayUserInfo(context, String name, String email, String image,
+    String phone, String employeeID, String designation) {
+  var user;
   return SingleChildScrollView(
     child: Padding(
       padding: const EdgeInsets.all(25.0),
@@ -604,8 +631,15 @@ Widget displayUserInfo(context, String name, String email, String phone,
           const SizedBox(
             height: 50,
           ),
+          CircleAvatar(
+            radius: 50,
+            backgroundImage: NetworkImage(image),
+          ),
+          const SizedBox(
+            height: 40,
+          ),
           Container(
-            height: 250,
+            height: 130,
             decoration: const BoxDecoration(
                 borderRadius: const BorderRadius.all(const Radius.circular(13)),
                 color: Color.fromARGB(255, 72, 81, 103)),
@@ -659,7 +693,24 @@ Widget displayUserInfo(context, String name, String email, String phone,
                     ],
                   ),
                 ),
-                // Phone Number
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 25,
+          ),
+          Container(
+            height: 150,
+            decoration: const BoxDecoration(
+                borderRadius: const BorderRadius.all(const Radius.circular(13)),
+                color: Color.fromARGB(255, 72, 81, 103)),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 25,
+                ),
+
+                //phone
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -683,6 +734,7 @@ Widget displayUserInfo(context, String name, String email, String phone,
                     ],
                   ),
                 ),
+
                 // Employee ID
                 Padding(
                   padding: const EdgeInsets.all(8.0),
