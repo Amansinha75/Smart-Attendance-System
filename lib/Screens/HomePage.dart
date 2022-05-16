@@ -1,5 +1,5 @@
 // ignore: file_names
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names, curly_braces_in_flow_control_structures, unused_import
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names, curly_braces_in_flow_control_structures, unused_import, unused_local_variable
 
 import 'dart:math';
 
@@ -71,7 +71,6 @@ class _HomepageState extends State<Homepage> {
 
     if (sharedPreferences.getString("user_id") != null) {
       uID = sharedPreferences.getString("user_id")!;
-      print(uID);
       final ref = await FirebaseDatabase.instance.ref("Users/" + uID).once();
       ref.snapshot.children.forEach((element) {
         if (element.key.toString() == "email") {
@@ -100,14 +99,12 @@ class _HomepageState extends State<Homepage> {
       final newChild = ref.push();
       final DateTime now = DateTime.now();
   final DateFormat formatter = DateFormat('yyyy-MM-dd');
-
       await FirebaseDatabase.instance.ref("Homepage/"+newChild.key.toString()).set({
         "morningtime": _morningtime.text,
         "eveningtime": _eveningtime.text,
         "userId": widget.uID,
         
       });
-
       _morningtime.text = "";
       _eveningtime.text = "";
     
@@ -119,7 +116,6 @@ class _HomepageState extends State<Homepage> {
       Navigator.pop(context);
       _showToast(context, "Some Unknown Error Occurred");
     }
-
   } */
 
 // location verification of the company for marking attendance
@@ -521,7 +517,6 @@ class _HomepageState extends State<Homepage> {
               ),
               label: "My Account"),
           /*3 Dashboard
-
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.dashboard,
@@ -544,37 +539,31 @@ class _HomepageState extends State<Homepage> {
                     "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_960_720.png"),
               ),
             ),
-
             //for features part in the drawer
             ListTile(
                 leading: Icon(Icons.satellite),
                 title: Text("My Location"),
                 subtitle: Text("Current: Patna, Bihar"),
                 trailing: Icon(Icons.map_outlined)),
-
             ListTile(
                 leading: Icon(Icons.language_rounded),
                 title: Text("Change Language"),
                 subtitle: Text("Current: English"),
                 trailing: Icon(Icons.arrow_drop_down)),
-
             ListTile(
                 leading: Icon(Icons.date_range),
                 title: Text("Today's Date"),
                 subtitle: Text("Date: DD/MM/YY"),
                 trailing: Icon(Icons.change_circle)),
-
             ListTile(
               leading: Icon(Icons.compare),
               title: Text("Feedback"),
               subtitle: Text("Write us"),
               trailing: Icon(Icons.send),
             ),
-
             ListTile(
               leading: Icon(Icons.logout),
               title: Text("Logout"),
-
               //subtitle: Text("Current: Patna, Bihar"),
               //trailing: Icon(Icons.map_outlined)
             ),
@@ -583,28 +572,6 @@ class _HomepageState extends State<Homepage> {
       ), */
     );
   }
-}
-
-init() {}
-
-class _showToast {
-  _showToast(BuildContext context, String s);
-}
-
-class _eveningtime {
-  static var text;
-}
-
-class _morningtime {
-  static var text;
-}
-
-Widget SignUpWidget() {
-  return Container();
-}
-
-Widget LoggedInWidget() {
-  return Container();
 }
 
 // FOR ACCOUNT PART (WIDGET PART)

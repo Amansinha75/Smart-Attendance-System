@@ -4,11 +4,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_attendence_system/Screens/LoginPage.dart';
+import 'package:smart_attendence_system/google_sign_in.dart';
 
 import 'HomePage.dart';
 
 class NewUserRegistration extends StatefulWidget {
-  const NewUserRegistration({Key? key}) : super(key: key);
+  final String name;
+  final String email;
+
+  const NewUserRegistration({Key? key, required this.name, required this.email})
+      : super(key: key);
 
   @override
   State<NewUserRegistration> createState() => _NewUserRegistrationState();
@@ -24,8 +29,6 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
   final TextEditingController _passwordR = TextEditingController();
   final TextEditingController _designation = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  //final DatabaseReference ref = FirebaseDatabase.instance.ref("users");
 
   var isObscure;
 
@@ -53,6 +56,22 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
             child: CircularProgressIndicator(),
           );
         });
+  }
+
+  initialisation() async {
+    if (widget.email.isNotEmpty) {
+      _emailID.text = widget.email;
+      _name.text = widget.name;
+      await GoogleSignInApi.logout();
+    }
+    
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initialisation();
   }
 
   //int valueChoose = 0;
@@ -147,6 +166,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                             AutofillGroup(
                               child: TextFormField(
                                 controller: _name,
+                                readOnly: widget.name.isEmpty ? false : true,
                                 autofillHints: const [AutofillHints.name],
                                 keyboardType: TextInputType.name,
                                 validator: (value) {
@@ -224,6 +244,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                             AutofillGroup(
                               child: TextFormField(
                                 controller: _emailID,
+                                readOnly: widget.email.isEmpty ? false : true,
                                 autofillHints: const [AutofillHints.email],
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) {

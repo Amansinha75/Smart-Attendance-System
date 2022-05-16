@@ -59,7 +59,7 @@ class name extends StatelessWidget {
           "/OTPsent": (context) => const OTPsent(),
           "/Resetpass": (context) => const ResetPassword(),
           "/Resetpass_success": (context) => const ResetPasswordSuccessfully(),
-          "/NewuserReg": (context) => const NewUserRegistration(),
+          "/NewuserReg": (context) => const NewUserRegistration(name: '', email: '',),
           "/NewAcc_Created": (context) => const NewAccountCreated(),
           "/demo": (context) => const demo(userId: '',),
           "/companyname": (context) => const CompanyName(),

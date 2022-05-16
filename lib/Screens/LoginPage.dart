@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_attendence_system/Screens/HomePage.dart';
+import 'package:smart_attendence_system/Screens/NewUserRegistration.dart';
 import 'package:smart_attendence_system/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
@@ -28,7 +29,8 @@ class _LoginPageState extends State<LoginPage> {
   late SharedPreferences sharedPreferences;
   bool loggedin = false;
 
-  final DatabaseReference ref = FirebaseDatabase.instance.ref("users");
+  final DatabaseReference ref = FirebaseDatabase.instance.ref("Users");
+  late DatabaseEvent data;
   bool loaded = false;
   // ignore: prefer_final_fields, unused_field
   bool _isObscure = true;
@@ -67,13 +69,40 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future signIn() async {
-    final user=await GoogleSignInApi.login();
-    if (user==null){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('sign in failed'),));
+    final user = await GoogleSignInApi.login();
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('sign in failed'),
+      ));
     } else {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(context)=> Homepage(companyname: ''), ));
+      data = await ref.once();
+      final temp = data.snapshot.children.where((element) {
+        bool flag = false;
+        element.children.forEach((element) {
+          if (element.key.toString() == "email" &&
+              element.value.toString() == user.email) {
+            flag = true;
+          }
+        });
+        return flag;
+      }).toList();
+
+      if (temp.isEmpty) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => NewUserRegistration(
+                      name: (user.displayName).toString(),
+                      email: user.email,
+                    )));
+      } else {
+        sharedPreferences.setBool('LoggedIn', true);
+        sharedPreferences.setString("user_id", (temp[0].key).toString());
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => Homepage(companyname: ''),
+        ));
+      }
     }
-    
   }
 
   buildShowDialog(BuildContext context) {
@@ -267,7 +296,8 @@ class _LoginPageState extends State<LoginPage> {
                                           password: _password.text.trim());
                                   var user = FirebaseAuth.instance.currentUser!;
                                   if (user.emailVerified) {
-                                    print(userCredential.user!.uid);
+                                    await sharedPreferences.setBool(
+                                        'LoggedIn', true);
                                     await sharedPreferences.setString(
                                         "user_id", userCredential.user!.uid);
 
