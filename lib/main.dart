@@ -34,11 +34,11 @@ class name extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       //create: (context) => GoogleSignInProvider(),
-      create: (BuildContext context) {  },
+      create: (BuildContext context) {},
       child: MaterialApp(
-        debugShowCheckedModeBanner: false,
+        debugShowCheckedModeBanner: true,
         title: "Smart Attendence System",
-        home: LoginPage(companyname: '',),
+        home: WelcomePage(),
         theme: ThemeData(
           primarySwatch: Colors.indigo,
         ),
@@ -51,7 +51,7 @@ class name extends StatelessWidget {
           "/Login": (context) => const LoginPage(
                 companyname: '',
               ),
-          "/Home": (context) =>  Homepage(
+          "/Home": (context) => Homepage(
                 companyname: '',
               ),
           "/welcomepage": (context) => const WelcomePage(),
@@ -59,9 +59,14 @@ class name extends StatelessWidget {
           "/OTPsent": (context) => const OTPsent(),
           "/Resetpass": (context) => const ResetPassword(),
           "/Resetpass_success": (context) => const ResetPasswordSuccessfully(),
-          "/NewuserReg": (context) => const NewUserRegistration(name: '', email: '',),
+          "/NewuserReg": (context) => const NewUserRegistration(
+                name: '',
+                email: '',
+              ),
           "/NewAcc_Created": (context) => const NewAccountCreated(),
-          "/demo": (context) => const demo(userId: '',),
+          "/demo": (context) => const demo(
+                userId: '',
+              ),
           "/companyname": (context) => const CompanyName(),
 
           //Widget build(BuildContext context)=>ChangeNotifierProvider()

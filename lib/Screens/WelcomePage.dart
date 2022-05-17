@@ -31,6 +31,8 @@ class _WelcomePageState extends State<WelcomePage> {
   init() async {
     prefs = await SharedPreferences.getInstance();
 
+    
+
     if (prefs.getString('lang') != null) {
       lang = prefs.getString('lang')!;
     }

@@ -99,10 +99,17 @@ class _HomepageState extends State<Homepage> {
       final newChild = ref.push();
       final DateTime now = DateTime.now();
   final DateFormat formatter = DateFormat('yyyy-MM-dd');
-      await FirebaseDatabase.instance.ref("Homepage/"+newChild.key.toString()).set({
+      await FirebaseDatabase.instance.ref("attendance/"+newChild.key.toString()).set({
         "morningtime": _morningtime.text,
         "eveningtime": _eveningtime.text,
         "userId": widget.uID,
+
+        "month",
+        "atte":{
+          {
+            date,morning,eve
+          }
+        }
         
       });
       _morningtime.text = "";
@@ -328,7 +335,7 @@ class _HomepageState extends State<Homepage> {
                           //sharedPreferences.setBool("LoggedIn", true);
                           final hour = DateTime.now().hour;
 
-                          if (18 <= hour && hour <= 20) {
+                          if (17 <= hour && hour <= 18) {
                             await getLocation();
                             double radius = getDistanceFromLatLonInKm(
                                     lat, lon, 18.674214, 73.884303) *
@@ -580,7 +587,7 @@ Widget displayUserInfo(context, String name, String email, String image,
   var user;
   return SingleChildScrollView(
     child: Padding(
-      padding: const EdgeInsets.all(25.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -608,7 +615,7 @@ Widget displayUserInfo(context, String name, String email, String image,
           Container(
             height: 130,
             decoration: const BoxDecoration(
-                borderRadius: const BorderRadius.all(const Radius.circular(13)),
+                borderRadius: const BorderRadius.all(const Radius.circular(10)),
                 color: Color.fromARGB(255, 72, 81, 103)),
             child: Column(
               children: [
@@ -629,7 +636,7 @@ Widget displayUserInfo(context, String name, String email, String image,
                       Text(
                         name,
                         style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 19,
                             color: Colors.white,
                             fontWeight: FontWeight.bold),
                       ),
@@ -653,7 +660,7 @@ Widget displayUserInfo(context, String name, String email, String image,
                       Text(
                         email,
                         style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 19,
                             color: Colors.white,
                             fontWeight: FontWeight.bold),
                       ),
@@ -669,12 +676,12 @@ Widget displayUserInfo(context, String name, String email, String image,
           Container(
             height: 150,
             decoration: const BoxDecoration(
-                borderRadius: const BorderRadius.all(const Radius.circular(13)),
+                borderRadius: const BorderRadius.all(const Radius.circular(10)),
                 color: Color.fromARGB(255, 72, 81, 103)),
             child: Column(
               children: [
                 const SizedBox(
-                  height: 25,
+                  height: 20,
                 ),
 
                 //phone
@@ -694,7 +701,7 @@ Widget displayUserInfo(context, String name, String email, String image,
                       Text(
                         phone,
                         style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 19,
                             color: Colors.white,
                             fontWeight: FontWeight.bold),
                       ),
@@ -719,7 +726,7 @@ Widget displayUserInfo(context, String name, String email, String image,
                       Text(
                         employeeID,
                         style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 19,
                             color: Colors.white,
                             fontWeight: FontWeight.bold),
                       ),
@@ -744,7 +751,7 @@ Widget displayUserInfo(context, String name, String email, String image,
                       Text(
                         designation,
                         style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 19,
                             color: Colors.white,
                             fontWeight: FontWeight.bold),
                       ),

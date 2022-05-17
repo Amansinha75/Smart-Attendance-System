@@ -348,9 +348,8 @@ class _LoginPageState extends State<LoginPage> {
                                         borderRadius: BorderRadius.circular(10),
                                         side: const BorderSide()))),
                             onPressed: signIn,
-                            icon: Image.network(
-                                'http://pngimg.com/uploads/google/google_PNG19635.png',
-                                fit: BoxFit.cover),
+                            icon: Image.asset("image/googleicon.png",
+                                width: 27, height: 27, fit: BoxFit.contain),
                             label: const Text("Sign in with Google",
                                 style: TextStyle(
                                     color: Colors.black, fontSize: 17)),
