@@ -11,8 +11,12 @@ import 'HomePage.dart';
 class NewUserRegistration extends StatefulWidget {
   final String name;
   final String email;
-
-  const NewUserRegistration({Key? key, required this.name, required this.email})
+  final String companyName;
+  const NewUserRegistration(
+      {Key? key,
+      required this.name,
+      required this.email,
+      required this.companyName})
       : super(key: key);
 
   @override
@@ -64,7 +68,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
       _name.text = widget.name;
       await GoogleSignInApi.logout();
     }
-    
+
     setState(() {});
   }
 
@@ -73,37 +77,6 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
     super.initState();
     initialisation();
   }
-
-  //int valueChoose = 0;
-  //final List<String> listItems = ["BSPGCL", "BSPTCL", "SBPDCL", "NBPDCL"];
-
-  /* addUserData() async {
-    try {
-      final newChild = ref.push();
-      Map<String, String> data = {
-        "name": _name.text,
-        "email": _emailID.text,
-        "password": _password.text,
-        "passwordR": _passwordR.text,
-        "employeeID": _employeeID.text,
-        "phone": _phone.text
-      };
-      print(data);
-      await FirebaseDatabase.instance
-          .ref("users/" + newChild.key.toString())
-          .set(data);
-
-      _name.text = "";
-      _emailID.text = "";
-      _password.text = "";
-      _employeeID.text = "";
-      _phone.text = "";
-    } catch (e) {}
-
-    if (this.mounted) {
-      setState(() {});
-    }
-  } */
 
   @override
   Widget build(BuildContext context) {
@@ -424,6 +397,7 @@ class _NewUserRegistrationState extends State<NewUserRegistration> {
                                       "employeeID": _employeeID.text,
                                       "passwordR": _passwordR.text,
                                       "designation": _designation.text,
+                                      "companyName": widget.companyName
                                     });
                                     Navigator.pop(context);
                                     _showToast(

@@ -56,11 +56,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (loggedin) {
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Homepage(
-                    companyname: widget.companyname,
-                  )));
+          context, MaterialPageRoute(builder: (context) => Homepage()));
     } else {
       setState(() {
         loaded = true;
@@ -92,14 +88,14 @@ class _LoginPageState extends State<LoginPage> {
             context,
             MaterialPageRoute(
                 builder: (context) => NewUserRegistration(
-                      name: (user.displayName).toString(),
-                      email: user.email,
-                    )));
+                    name: (user.displayName).toString(),
+                    email: user.email,
+                    companyName: widget.companyname)));
       } else {
         sharedPreferences.setBool('LoggedIn', true);
         sharedPreferences.setString("user_id", (temp[0].key).toString());
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => Homepage(companyname: ''),
+          builder: (context) => Homepage(),
         ));
       }
     }
@@ -305,9 +301,7 @@ class _LoginPageState extends State<LoginPage> {
                                     Navigator.pushAndRemoveUntil(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => Homepage(
-                                                  companyname: '',
-                                                )),
+                                            builder: (context) => Homepage()),
                                         (route) => false);
                                   } else {
                                     await user.sendEmailVerification();

@@ -51,9 +51,7 @@ class name extends StatelessWidget {
           "/Login": (context) => const LoginPage(
                 companyname: '',
               ),
-          "/Home": (context) => Homepage(
-                companyname: '',
-              ),
+          "/Home": (context) => Homepage(),
           "/welcomepage": (context) => const WelcomePage(),
           "/forgotpass": (context) => const ForgotPassword(),
           "/OTPsent": (context) => const OTPsent(),
@@ -62,6 +60,7 @@ class name extends StatelessWidget {
           "/NewuserReg": (context) => const NewUserRegistration(
                 name: '',
                 email: '',
+                companyName: "",
               ),
           "/NewAcc_Created": (context) => const NewAccountCreated(),
           "/demo": (context) => const demo(

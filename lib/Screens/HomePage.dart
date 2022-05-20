@@ -1,6 +1,7 @@
 // ignore: file_names
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names, curly_braces_in_flow_control_structures, unused_import, unused_local_variable
 
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,11 +20,8 @@ import 'package:smart_attendence_system/google_sign_in.dart';
 import 'logged_in.dart';
 
 class Homepage extends StatefulWidget {
-  final String companyname;
-
   Homepage({
     Key? key,
-    required this.companyname,
   }) : super(key: key);
 
   var uID;
@@ -34,6 +33,7 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   late SharedPreferences sharedPreferences;
   GoogleSignInAccount? user;
+  String companyName = "";
   double lat = 0;
   double lon = 0;
   String result = "";
@@ -46,12 +46,124 @@ class _HomepageState extends State<Homepage> {
   String _employeeID = "";
   GoogleSignIn _googleSignIn = GoogleSignIn();
   String _designation = "";
-  //String formattedDate = formatter.format(now);
+  String date = "";
+  String time = "";
 
-  var now = new DateTime.now();
-  var formatter = new DateFormat('yyyy-MM-dd');
+  final DatabaseReference ref =
+      FirebaseDatabase.instance.ref("AttendanceReport");
+  late DatabaseEvent data;
 
-  var ref;
+  _showToast(BuildContext context, String show) {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text(show),
+        action: SnackBarAction(
+            label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+      ),
+    );
+  }
+
+  MarkAttendance(String duration) async {
+    buildShowDialog(context);
+    try {
+      data = await ref.once();
+      String alreadyId = "";
+
+      final temp = data.snapshot.children.where((element) {
+        bool f1 = false;
+        bool f2 = false;
+        bool f3 = false;
+        element.children.forEach((element) {
+          if (element.key.toString() == "user" &&
+              element.value.toString() == _email) {
+            f1 = true;
+          } else if (element.key.toString() == "year" &&
+              element.value.toString() == date.substring(0, 4)) {
+            f2 = true;
+          } else if (element.key.toString() == "month" &&
+              element.value.toString() == date.substring(5, 7)) {
+            f3 = true;
+          }
+        });
+        return f1 && f2 && f3;
+      }).toList();
+
+      if (temp.isEmpty) {
+        final newChild = ref.push();
+
+        await FirebaseDatabase.instance
+            .ref("AttendanceReport/" + newChild.key.toString())
+            .set({
+          "user": _email,
+          "year": date.substring(0, 4),
+          "month": date.substring(5, 7),
+          "attendance": {
+            date.substring(8, 10): {duration + " Time": time, duration: true}
+          }
+        });
+
+        Navigator.pop(context);
+        attendaceMarkedStatus(
+            "Attendance Marked Successfully", duration + " Time", true);
+      } else {
+        alreadyId = temp[0].key!;
+        final ref = FirebaseDatabase.instance.ref();
+        final snapshot = await ref
+            .child("AttendanceReport/" +
+                alreadyId +
+                "/attendance/" +
+                date.substring(8, 10) +
+                "/" +
+                duration)
+            .get();
+        if (snapshot.exists) {
+          Navigator.pop(context);
+          _showToast(context, "Attendance Already Marked");
+        } else {
+          await FirebaseDatabase.instance
+              .ref("AttendanceReport/" +
+                  alreadyId +
+                  "/attendance/" +
+                  date.substring(8, 10))
+              .update({duration + " Time": time, duration: true});
+          Navigator.pop(context);
+          attendaceMarkedStatus(
+              "Attendance Marked Successfully", duration + " Time", true);
+        }
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      _showToast(context, "Some Unknown Error Occurred");
+    }
+  }
+
+  fetchDateTime() async {
+    try {
+      final response = await http
+          .get(Uri.parse("http://worldtimeapi.org/api/timezone/Asia/Kolkata"));
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data["day_of_week"] == 7) {
+          date = "";
+          time = "";
+        } else {
+          String temp = data["datetime"];
+          date = temp.substring(0, 10);
+          time = temp.substring(11, 16);
+        }
+      } else {
+        _showToast(context, "Some Unknown Error Occured");
+      }
+    } catch (e) {
+      _showToast(context, "Make Sure that internet is working");
+    }
+
+    if (this.mounted) {
+      setState(() {});
+    }
+  }
 
 //FOR GETTING USER DATA
   Future ini() async {
@@ -85,6 +197,8 @@ class _HomepageState extends State<Homepage> {
           _employeeID = element.value.toString();
         } else if (element.key.toString() == "designation") {
           _designation = element.value.toString();
+        } else if (element.key.toString() == "companyName") {
+          companyName = element.value.toString();
         }
       });
 
@@ -93,37 +207,6 @@ class _HomepageState extends State<Homepage> {
       print("Not Found");
     }
   }
-
-/*Markattendancedata() async {
-    try {
-      final newChild = ref.push();
-      final DateTime now = DateTime.now();
-  final DateFormat formatter = DateFormat('yyyy-MM-dd');
-      await FirebaseDatabase.instance.ref("attendance/"+newChild.key.toString()).set({
-        "morningtime": _morningtime.text,
-        "eveningtime": _eveningtime.text,
-        "userId": widget.uID,
-
-        "month",
-        "atte":{
-          {
-            date,morning,eve
-          }
-        }
-        
-      });
-      _morningtime.text = "";
-      _eveningtime.text = "";
-    
-      
-      Navigator.pop(context);
-      _showToast(context, "Crop Added Successfully");
-      await init();
-    } catch(e) {
-      Navigator.pop(context);
-      _showToast(context, "Some Unknown Error Occurred");
-    }
-  } */
 
 // location verification of the company for marking attendance
   double getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -164,6 +247,76 @@ class _HomepageState extends State<Homepage> {
     super.initState();
 
     ini();
+  }
+
+  buildShowDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(
+            child: const CircularProgressIndicator(),
+          );
+        });
+  }
+
+  void attendaceMarkedStatus(String status, String time, bool flag) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(status),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  flag ? Text('Welcome to the Office.') : SizedBox(),
+                  Text(time)
+                ],
+              ),
+            ),
+            actions: [
+              ElevatedButton(
+                child: Text('Ok'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  void outOfTime(String t1, String t2) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Attendence Not Marked'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  Text(
+                    t1,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      //fontSize: 30,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(t2)
+                ],
+              ),
+            ),
+            actions: [
+              ElevatedButton(
+                child: Text('Ok'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 
 // FOR HOME SCREEN PART
@@ -211,100 +364,36 @@ class _HomepageState extends State<Homepage> {
                       height: 150.0,
                       child: ElevatedButton(
                         onPressed: () async {
-                          // time
-                          final hour = DateTime.now().hour;
-                          if (9 <= hour && hour <= 12) {
-                            await getLocation();
-                            //lattitude & Longitude of office
-                            double radius = getDistanceFromLatLonInKm(
-                                    lat, lon, 18.674214, 73.884303) *
-                                1000;
-                            if (radius <= 100) {
-                              setState(() {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text(
-                                            'Attendence Marked Successfully'),
-                                        content: SingleChildScrollView(
-                                          child: ListBody(
-                                            children: [
-                                              Text('Welcome to the Office.'),
-                                              Text("Morning Time.")
-                                            ],
-                                          ),
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                            child: Text('Ok'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    });
-                              });
+                          buildShowDialog(context);
+                          await fetchDateTime();
+                          Navigator.pop(context);
+                          if (date.isEmpty || time.isEmpty) {
+                            _showToast(context, "Today is Sunday");
+                          } else if (9 <= int.parse(time.substring(0, 2)) &&
+                              12 >= int.parse(time.substring(0, 2))) {
+                            if (12 == int.parse(time.substring(0, 2)) &&
+                                int.parse(time.substring(3, 5)) > 0) {
+                              outOfTime('Morning Time: 9am-12pm',
+                                  "Attendance can be marked between 9 AM to 12 Noon");
                             } else {
-                              setState(() {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text('Attendence Not Marked'),
-                                        content: SingleChildScrollView(
-                                          child: ListBody(
-                                            children: [
-                                              Text(
-                                                  'You are not in the premise'),
-                                            ],
-                                          ),
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                            child: Text('Ok'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    });
-                              });
+                              buildShowDialog(context);
+                              await getLocation();
+                              //lattitude & Longitude of office
+                              double radius = getDistanceFromLatLonInKm(
+                                      lat, lon, 18.674214, 73.884303) *
+                                  1000;
+
+                              Navigator.pop(context);
+                              if (radius <= 100) {
+                                await MarkAttendance("Morning");
+                              } else {
+                                attendaceMarkedStatus("Attendance Not Marked",
+                                    "You are not in the premise", false);
+                              }
                             }
                           } else {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('Attendence Not Marked'),
-                                    content: SingleChildScrollView(
-                                      child: ListBody(
-                                        children: [
-                                          Text(
-                                            'Morning Time: 9am-12pm',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              //fontSize: 30,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          Text(
-                                              "Attendance can be marked between 9 AM to 12 Noon")
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      ElevatedButton(
-                                        child: Text('Ok'),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                });
+                            outOfTime('Morning Time: 9am-12pm',
+                                "Attendance can be marked between 9 AM to 12 Noon");
                           }
                         },
                         // morning time buttom (style, colour)
@@ -332,100 +421,35 @@ class _HomepageState extends State<Homepage> {
                       height: 150.0,
                       child: ElevatedButton(
                         onPressed: () async {
-                          //sharedPreferences.setBool("LoggedIn", true);
-                          final hour = DateTime.now().hour;
-
-                          if (17 <= hour && hour <= 18) {
-                            await getLocation();
-                            double radius = getDistanceFromLatLonInKm(
-                                    lat, lon, 18.674214, 73.884303) *
-                                1000;
-                            if (radius <= 100) {
-                              setState(() {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text(
-                                            'Attendence Marked Successfully'),
-                                        content: SingleChildScrollView(
-                                          child: ListBody(
-                                            children: [
-                                              Text('See you Next day.'),
-                                              Text("Evening Time.")
-                                            ],
-                                          ),
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                            child: Text('Ok'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    });
-                              });
+                          buildShowDialog(context);
+                          await fetchDateTime();
+                          Navigator.pop(context);
+                          if (date.isEmpty || time.isEmpty) {
+                            _showToast(context, "Today is Sunday");
+                          } else if (17 <= int.parse(time.substring(0, 2)) &&
+                              18 >= int.parse(time.substring(0, 2))) {
+                            if (18 == int.parse(time.substring(0, 2)) &&
+                                int.parse(time.substring(3, 5)) > 0) {
+                              outOfTime('Evening Time: 5pm-6pm',
+                                  "Attendence can be marked between 5pm to 6pm");
                             } else {
-                              setState(() {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text('Attendence Not Marked'),
-                                        content: SingleChildScrollView(
-                                          child: ListBody(
-                                            children: [
-                                              Text(
-                                                  'You are not in the premise'),
-                                            ],
-                                          ),
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                            child: Text('Ok'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    });
-                              });
+                              buildShowDialog(context);
+                              await getLocation();
+                              double radius = getDistanceFromLatLonInKm(
+                                      lat, lon, 18.674214, 73.884303) *
+                                  1000;
+
+                              Navigator.pop(context);
+                              if (radius <= 100) {
+                                await MarkAttendance("Evening");
+                              } else {
+                                attendaceMarkedStatus("Attendance Not Marked",
+                                    "You are not in the premise", false);
+                              }
                             }
                           } else {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('Attendance Not Marked'),
-                                    content: SingleChildScrollView(
-                                      child: ListBody(
-                                        children: [
-                                          Text(
-                                            'Evening Time: 5pm-6pm',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              //fontSize: 30,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          Text(
-                                              "Attendence can be marked between 5pm to 6pm")
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      ElevatedButton(
-                                        child: Text('Ok'),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                });
+                            outOfTime('Evening Time: 5pm-6pm',
+                                "Attendence can be marked between 5pm to 6pm");
                           }
                         },
                         child: const Text("Evening Time",
@@ -456,7 +480,7 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.companyname,
+          companyName,
           style: TextStyle(
             //fontWeight: FontWeight.bold,
             fontSize: 20,
