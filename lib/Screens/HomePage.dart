@@ -14,10 +14,20 @@ import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_attendence_system/Screens/CompanyName.dart';
 import 'package:smart_attendence_system/Screens/LoginPage.dart';
 import 'package:smart_attendence_system/google_sign_in.dart';
 
 import 'logged_in.dart';
+
+class AttendanceData {
+  String year;
+  String month;
+  Map<String, dynamic> dailyReport;
+
+  AttendanceData(
+      {required this.month, required this.year, required this.dailyReport});
+}
 
 class Homepage extends StatefulWidget {
   Homepage({
@@ -48,6 +58,7 @@ class _HomepageState extends State<Homepage> {
   String _designation = "";
   String date = "";
   String time = "";
+  List<String> haveReport = [];
 
   final DatabaseReference ref =
       FirebaseDatabase.instance.ref("AttendanceReport");
@@ -474,6 +485,182 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
+  Widget showReportWidget(AttendanceData data) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height - 400,
+      child: ListView.separated(
+          itemBuilder: (BuildContext context, int index) {
+            String key = data.dailyReport.keys.elementAt(index);
+            bool morning =
+                (data.dailyReport[key]["Morning"] == null ? false : true);
+            bool evening =
+                (data.dailyReport[key]["Evening"] == null ? false : true);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(key),
+                SizedBox(
+                  height: 8,
+                ),
+                Text("Morning Attendance " +
+                    (morning
+                        ? ("Marked At " + data.dailyReport[key]["Morning Time"])
+                        : "Not Marked")),
+                SizedBox(
+                  height: 8,
+                ),
+                Text("Evening Attendance " +
+                    (evening
+                        ? ("Marked At " + data.dailyReport[key]["Evening Time"])
+                        : "Not Marked")),
+              ],
+            );
+          },
+          separatorBuilder: (builder, context) => SizedBox(
+                height: 5,
+              ),
+          itemCount: data.dailyReport.length),
+    );
+  }
+
+  Future<List<AttendanceData>> fetchAttendanceData() async {
+    try {
+      final data = await ref.once();
+
+      final report = data.snapshot.children.where((element) {
+        bool flag = false;
+        element.children.forEach((element) {
+          if (element.key.toString() == "user" &&
+              element.value.toString() == _email) {
+            flag = true;
+          }
+        });
+        return flag;
+      }).toList();
+
+      haveReport.clear();
+      List<AttendanceData> attendanceArr = [];
+      String month = "";
+      String year = "";
+      Map<String, dynamic> tempData = {};
+
+      for (int i = 0; i < report.length; i++) {
+        final element = report[i];
+        tempData.clear();
+        element.children.forEach((element) {
+          if (element.key.toString() == 'month') {
+            month = element.value.toString();
+          } else if (element.key.toString() == 'year') {
+            year = element.value.toString();
+          } else if (element.key.toString() == 'attendance') {
+            element.children.forEach((element) {
+              tempData[element.key.toString()] = element.value;
+            });
+          }
+        });
+        attendanceArr.add(
+            AttendanceData(month: month, year: year, dailyReport: tempData));
+
+        haveReport.add(month + "/" + year);
+      }
+      return attendanceArr;
+    } catch (e) {
+      _showToast(context, "Some Unknown Error Occured");
+    }
+
+    return [];
+  }
+
+  Widget dashboardWidget() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              "Attendance Report",
+              style: TextStyle(fontSize: 24),
+            ),
+            SizedBox(
+              height: 8,
+            ),
+            FutureBuilder<List<AttendanceData>>(
+                future: fetchAttendanceData(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<AttendanceData>> snapshot) {
+                  if (snapshot.hasData) {
+                    int dropdownValue = 0;
+                    List<AttendanceData>? data = snapshot.data;
+                    return StatefulBuilder(builder: (BuildContext context,
+                        void Function(void Function()) setState) {
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                DropdownButton<String>(
+                                  alignment: AlignmentDirectional.topStart,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  itemHeight: 60,
+                                  elevation: 1,
+                                  hint: Text(
+                                    haveReport[dropdownValue],
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                                  items: haveReport.map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value:
+                                          haveReport.indexOf(value).toString(),
+                                      child: new Text(
+                                        value,
+                                        style: TextStyle(fontSize: 18),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (_) {
+                                    dropdownValue = int.parse(_!);
+                                    setState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          showReportWidget(data![dropdownValue])
+                        ],
+                      );
+                    });
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text("Some Error Occured"));
+                  } else {
+                    return Center(
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Text("Loading Data...")
+                        ],
+                      ),
+                    );
+                  }
+                })
+          ],
+        ),
+      ),
+    );
+  }
+
   // OTHER PARTS
   @override
   Widget build(BuildContext context) {
@@ -503,7 +690,7 @@ class _HomepageState extends State<Homepage> {
 
       body: bottomIndex == 0
           ? Home(context)
-          : (bottomIndex == 1
+          : (bottomIndex == 2
               ?
               //MY ACCOUNT PART
               _email.isEmpty
@@ -512,19 +699,17 @@ class _HomepageState extends State<Homepage> {
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height,
                       child: displayUserInfo(
-                          context,
-                          (user!.displayName).toString(),
-                          (user!.email).toString(),
-                          (user!.photoUrl).toString(),
-                          _phone,
-                          _employeeID,
-                          _designation))
+                        context,
+                        (user!.displayName).toString(),
+                        (user!.email).toString(),
+                        (user!.photoUrl).toString(),
+                        _phone,
+                        _employeeID,
+                        _designation,
+                        companyName,
+                      ))
               //DASHBOARD PART
-              : Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  color: Colors.yellow,
-                )),
+              : dashboardWidget()),
 
       //BOTTOM ICON PART
       bottomNavigationBar: BottomNavigationBar(
@@ -541,18 +726,18 @@ class _HomepageState extends State<Homepage> {
         items: [
           //1 Home
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.dashboard,
+              ),
+              label: "Dashboard"),
           //2 Person
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.person,
               ),
               label: "My Account"),
-          /*3 Dashboard
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.dashboard,
-              ),
-              label: "Dashboard") */
         ],
       ),
 
@@ -607,7 +792,7 @@ class _HomepageState extends State<Homepage> {
 
 // FOR ACCOUNT PART (WIDGET PART)
 Widget displayUserInfo(context, String name, String email, String image,
-    String phone, String employeeID, String designation) {
+    String phone, String employeeID, String designation, String companyName) {
   var user;
   return SingleChildScrollView(
     child: Padding(
@@ -698,7 +883,7 @@ Widget displayUserInfo(context, String name, String email, String image,
             height: 25,
           ),
           Container(
-            height: 150,
+            height: 200,
             decoration: const BoxDecoration(
                 borderRadius: const BorderRadius.all(const Radius.circular(10)),
                 color: Color.fromARGB(255, 72, 81, 103)),
@@ -774,6 +959,31 @@ Widget displayUserInfo(context, String name, String email, String image,
                       ),
                       Text(
                         designation,
+                        style: TextStyle(
+                            fontSize: 19,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+
+                //Company Name
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.work,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        companyName,
                         style: TextStyle(
                             fontSize: 19,
                             color: Colors.white,
