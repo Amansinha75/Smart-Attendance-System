@@ -496,25 +496,69 @@ class _HomepageState extends State<Homepage> {
                 (data.dailyReport[key]["Morning"] == null ? false : true);
             bool evening =
                 (data.dailyReport[key]["Evening"] == null ? false : true);
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(key),
-                SizedBox(
-                  height: 8,
+            return Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Container(
+                height: 130,
+                decoration: const BoxDecoration(
+                    borderRadius:
+                        const BorderRadius.all(const Radius.circular(10)),
+                    color: Color.fromARGB(255, 42, 52, 75)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Date: " + key,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Text(
+                        "Morning Attendance " +
+                            (morning
+                                ? ("Marked At: " +
+                                    data.dailyReport[key]["Morning Time"])
+                                : "Not Marked:"),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: Colors.white,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Text(
+                        "Evening Attendance " +
+                            (evening
+                                ? ("Marked At: " +
+                                    data.dailyReport[key]["Evening Time"])
+                                : "Not Marked:"),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: Colors.white,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                Text("Morning Attendance " +
-                    (morning
-                        ? ("Marked At " + data.dailyReport[key]["Morning Time"])
-                        : "Not Marked")),
-                SizedBox(
-                  height: 8,
-                ),
-                Text("Evening Attendance " +
-                    (evening
-                        ? ("Marked At " + data.dailyReport[key]["Evening Time"])
-                        : "Not Marked")),
-              ],
+              ),
             );
           },
           separatorBuilder: (builder, context) => SizedBox(
@@ -579,15 +623,20 @@ class _HomepageState extends State<Homepage> {
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            const SizedBox(height: 17),
             Text(
               "Attendance Report",
-              style: TextStyle(fontSize: 24),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 27,
+                color: Colors.black,
+              ),
             ),
             SizedBox(
-              height: 8,
+              height: 20,
             ),
             FutureBuilder<List<AttendanceData>>(
                 future: fetchAttendanceData(),
@@ -600,36 +649,47 @@ class _HomepageState extends State<Homepage> {
                         void Function(void Function()) setState) {
                       return Column(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                DropdownButton<String>(
-                                  alignment: AlignmentDirectional.topStart,
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  itemHeight: 60,
-                                  elevation: 1,
-                                  hint: Text(
-                                    haveReport[dropdownValue],
-                                    style: TextStyle(fontSize: 18),
+                          Container(
+                            height: 50,
+                            width: 120,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                border:
+                                    Border.all(color: Colors.black, width: 1),
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  DropdownButton<String>(
+                                    alignment: AlignmentDirectional.topStart,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    itemHeight: 60,
+                                    elevation: 1,
+                                    hint: Text(
+                                      haveReport[dropdownValue],
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                    items: haveReport.map((String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: haveReport
+                                            .indexOf(value)
+                                            .toString(),
+                                        child: new Text(
+                                          value,
+                                          style: TextStyle(fontSize: 18),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (_) {
+                                      dropdownValue = int.parse(_!);
+                                      setState(() {});
+                                    },
                                   ),
-                                  items: haveReport.map((String value) {
-                                    return DropdownMenuItem<String>(
-                                      value:
-                                          haveReport.indexOf(value).toString(),
-                                      child: new Text(
-                                        value,
-                                        style: TextStyle(fontSize: 18),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (_) {
-                                    dropdownValue = int.parse(_!);
-                                    setState(() {});
-                                  },
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                           SizedBox(
@@ -796,7 +856,7 @@ Widget displayUserInfo(context, String name, String email, String image,
   var user;
   return SingleChildScrollView(
     child: Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(15.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -822,10 +882,10 @@ Widget displayUserInfo(context, String name, String email, String image,
             height: 40,
           ),
           Container(
-            height: 130,
+            height: 120,
             decoration: const BoxDecoration(
                 borderRadius: const BorderRadius.all(const Radius.circular(10)),
-                color: Color.fromARGB(255, 72, 81, 103)),
+                color: Color.fromARGB(255, 42, 52, 75)),
             child: Column(
               children: [
                 const SizedBox(
@@ -883,10 +943,10 @@ Widget displayUserInfo(context, String name, String email, String image,
             height: 25,
           ),
           Container(
-            height: 200,
+            height: 190,
             decoration: const BoxDecoration(
                 borderRadius: const BorderRadius.all(const Radius.circular(10)),
-                color: Color.fromARGB(255, 72, 81, 103)),
+                color: Color.fromARGB(255, 42, 52, 75)),
             child: Column(
               children: [
                 const SizedBox(
@@ -976,7 +1036,7 @@ Widget displayUserInfo(context, String name, String email, String image,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Icon(
-                        Icons.work,
+                        Icons.house,
                         color: Colors.grey,
                       ),
                       SizedBox(
