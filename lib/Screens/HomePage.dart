@@ -1,5 +1,5 @@
 // ignore: file_names
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names, curly_braces_in_flow_control_structures, unused_import, unused_local_variable
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, non_constant_identifier_names, curly_braces_in_flow_control_structures, unused_import, unused_local_variable, must_be_immutable, unused_field
 
 import 'dart:convert';
 import 'dart:math';
@@ -17,7 +17,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_attendence_system/Screens/CompanyName.dart';
 import 'package:smart_attendence_system/Screens/LoginPage.dart';
 import 'package:smart_attendence_system/google_sign_in.dart';
-
 import 'logged_in.dart';
 
 class AttendanceData {
@@ -156,7 +155,7 @@ class _HomepageState extends State<Homepage> {
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        if (data["day_of_week"] == 7) {
+        if (data["day_of_week"] == 0) {
           date = "";
           time = "";
         } else {
