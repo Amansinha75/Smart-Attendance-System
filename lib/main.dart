@@ -38,7 +38,7 @@ class name extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: true,
         title: "Smart Attendence System",
-        home: WelcomePage(),
+        home: splashscreen(),
         theme: ThemeData(
           primarySwatch: Colors.indigo,
         ),

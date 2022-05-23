@@ -45,7 +45,13 @@ class _WelcomePageState extends State<WelcomePage> {
 
   init() async {
     prefs = await SharedPreferences.getInstance();
-    
+    if (prefs.getBool('WelomePage') != null) {
+      bool Visited = prefs.getBool('WelomePage')!;
+      if (Visited) {
+        Navigator.pushReplacementNamed(context, '/Login');
+        return;
+      }
+    }
     // await Future.delayed(Duration(seconds: 2));
     if (prefs.getBool('LoggedIn') != null) {
       bool loggedIn = prefs.getBool('LoggedIn')!;
@@ -54,10 +60,11 @@ class _WelcomePageState extends State<WelcomePage> {
         return;
       }
     }
+
     if (prefs.getString('lang') != null) {
       lang = prefs.getString('lang')!;
     }
-
+    prefs.setBool('WelomePage', true);
     welcome = await translateLang(welcome, lang);
     login = await translateLang(login, lang);
     Terms = await translateLang(Terms, lang);
